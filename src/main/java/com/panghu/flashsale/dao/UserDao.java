@@ -15,8 +15,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserDao {
     @Select("select * from user where id = #{id}")
-    User findById(@Param("id") int id);
-
-    @Insert("insert into user(id, name) values(#{id}, #{name})")
-    void insert(User user);
+    User findById(@Param("id") long id);
 }

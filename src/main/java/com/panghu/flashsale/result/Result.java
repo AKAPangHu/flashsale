@@ -16,16 +16,16 @@ public class Result<T> {
     private T data;
 
     /**
-     *  成功时候的调用
-     * */
-    public static  <T> Result<T> success(T data){
+     * 成功时候的调用
+     */
+    public static <T> Result<T> success(T data) {
         return new Result<T>(data);
     }
 
     /**
-     *  失败时候的调用
-     * */
-    public static  <T> Result<T> error(CodeMsg codeMsg){
+     * 失败时候的调用
+     */
+    public static <T> Result<T> error(CodeMsg codeMsg) {
         return new Result<T>(codeMsg);
     }
 
@@ -39,7 +39,7 @@ public class Result<T> {
     }
 
     private Result(CodeMsg codeMsg) {
-        if(codeMsg != null) {
+        if (codeMsg != null) {
             this.code = codeMsg.getCode();
             this.msg = codeMsg.getMsg();
         }

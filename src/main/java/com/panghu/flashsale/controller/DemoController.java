@@ -16,11 +16,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class DemoController {
 
-    private final UserService userService;
     private final RedisService redisService;
 
-    public DemoController(UserService userService, RedisService redisService) {
-        this.userService = userService;
+    public DemoController(RedisService redisService) {
         this.redisService = redisService;
     }
 
