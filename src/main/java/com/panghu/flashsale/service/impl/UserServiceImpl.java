@@ -3,12 +3,20 @@ package com.panghu.flashsale.service.impl;
 import com.panghu.flashsale.dao.UserDao;
 import com.panghu.flashsale.domain.User;
 import com.panghu.flashsale.exception.GlobalException;
+import com.panghu.flashsale.redis.RedisService;
+import com.panghu.flashsale.redis.UserKey;
 import com.panghu.flashsale.result.CodeMsg;
 import com.panghu.flashsale.service.UserService;
 import com.panghu.flashsale.utils.MD5Utils;
+import com.panghu.flashsale.utils.UUIDUtils;
 import com.panghu.flashsale.vo.LoginVo;
+import com.sun.deploy.net.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.util.StringUtils;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author: 胖虎
@@ -18,10 +26,12 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
+    private final RedisService redisService;
 
     @Autowired
-    public UserServiceImpl(UserDao userDao) {
+    public UserServiceImpl(UserDao userDao, RedisService redisService) {
         this.userDao = userDao;
+        this.redisService = redisService;
     }
 
     @Override
@@ -30,7 +40,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean login(LoginVo loginVo) {
+    public User findByToken(String token) {
+        if (StringUtils.isEmpty(token)) {
+            return null;
+        }
+
+        return redisService.get(UserKey.token, token, User.class);
+    }
+
+    @Override
+    public boolean login(LoginVo loginVo, HttpServletResponse resp) {
         if (loginVo == null) {
             throw new GlobalException(CodeMsg.SERVER_ERROR);
         }
@@ -49,6 +68,15 @@ public class UserServiceImpl implements UserService {
         if (!calculatedPassword.equals(dbPassword)) {
             throw new GlobalException(CodeMsg.PASSWORD_ERROR);
         }
+
+        //生成token，缓存进redis
+        String token = UUIDUtils.uuid();
+        redisService.set(UserKey.token, token, user);
+        Cookie cookie = new Cookie(COOKIE_NAME_TOKEN, token);
+        cookie.setMaxAge(UserKey.token.getExpireSeconds());
+        cookie.setPath("/");
+        resp.addCookie(cookie);
+
         return true;
     }
 }

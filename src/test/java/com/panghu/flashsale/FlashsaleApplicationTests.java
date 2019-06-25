@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import sun.security.provider.MD5;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -28,10 +27,10 @@ public class FlashsaleApplicationTests {
     @Test
     public void testRedisService(){
 
-        System.out.println(redisService.set(UserKey.getById(), "123", 12345));
-        System.out.println(redisService.decr(UserKey.getById(), "123"));
-        System.out.println(redisService.incr(UserKey.getById(), "123"));
-        System.out.println(redisService.exists(UserKey.getById(), "123"));
+//        System.out.println(redisService.set(UserKey.id(), "123", 12345));
+//        System.out.println(redisService.decr(UserKey.id(), "123"));
+//        System.out.println(redisService.incr(UserKey.id(), "123"));
+//        System.out.println(redisService.exists(UserKey.id(), "123"));
 
     }
 

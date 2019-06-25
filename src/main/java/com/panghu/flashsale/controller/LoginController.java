@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.thymeleaf.util.StringUtils;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 /**
@@ -42,8 +43,8 @@ public class LoginController {
 
     @RequestMapping("/do_login")
     @ResponseBody
-    public Result<Boolean> doLogin(@Valid LoginVo loginVo){
-        userService.login(loginVo);
+    public Result<Boolean> doLogin(@Valid LoginVo loginVo, HttpServletResponse resp){
+        userService.login(loginVo, resp);
         return Result.success(true);
     }
 }
