@@ -40,12 +40,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findByToken(String token) {
+    public User findByToken(HttpServletResponse resp, String token) {
         if (StringUtils.isEmpty(token)) {
             return null;
         }
-
-        return redisService.get(UserKey.token, token, User.class);
+        User user = redisService.get(UserKey.token, token, User.class);
+        //更新tokenCookie
+        addTokenCookie(resp, token, user);
+        return user;
     }
 
     @Override
@@ -71,12 +73,15 @@ public class UserServiceImpl implements UserService {
 
         //生成token，缓存进redis
         String token = UUIDUtils.uuid();
+        addTokenCookie(resp, token, user);
+        return true;
+    }
+
+    private void addTokenCookie(HttpServletResponse resp, String token, User user) {
         redisService.set(UserKey.token, token, user);
         Cookie cookie = new Cookie(COOKIE_NAME_TOKEN, token);
         cookie.setMaxAge(UserKey.token.getExpireSeconds());
         cookie.setPath("/");
         resp.addCookie(cookie);
-
-        return true;
     }
 }

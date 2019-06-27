@@ -1,14 +1,15 @@
 package com.panghu.flashsale.controller;
 
 import com.panghu.flashsale.domain.User;
-import com.panghu.flashsale.redis.RedisService;
-import com.panghu.flashsale.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.panghu.flashsale.service.GoodsService;
+import com.panghu.flashsale.vo.GoodsVo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.thymeleaf.util.StringUtils;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * @author: 胖虎
@@ -18,28 +19,57 @@ import org.thymeleaf.util.StringUtils;
 @RequestMapping("/goods")
 public class GoodsController {
 
-    private final RedisService redisService;
+    private final GoodsService goodsService;
 
-    private final UserService userService;
-
-    @Autowired
-    public GoodsController(RedisService redisService, UserService userService) {
-        this.redisService = redisService;
-        this.userService = userService;
+    public GoodsController(GoodsService goodsService) {
+        this.goodsService = goodsService;
     }
 
     @RequestMapping("/to_list")
-    public String toLogin(Model model,
-                        @CookieValue(value = UserService.COOKIE_NAME_TOKEN) String cookieToken){
-
-        if (StringUtils.isEmpty(cookieToken)){
+    public String list(Model model,
+                          User user,
+                          HttpServletResponse response) {
+        if (user == null) {
             return "login";
         }
 
-        User user = userService.findByToken(cookieToken);
+        List<GoodsVo> goodsVoList = goodsService.listGoodsVo();
+
         model.addAttribute("user", user);
+        model.addAttribute("goodsList", goodsVoList);
         return "goods_list";
     }
 
+    @RequestMapping("/to_detail/{goodsId}")
+    public String detail(User user, Model model, @PathVariable("goodsId") long goodsId){
+
+        GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
+        model.addAttribute("user", user);
+        model.addAttribute("goods", goods);
+
+        long startTime = goods.getStartDate().getTime();
+        long endTime = goods.getEndDate().getTime();
+        long now = System.currentTimeMillis();
+
+        //0代表秒杀未开始，1代表秒杀进行中，2代表秒杀已结束
+        int flashSaleStatus;
+        int remainSeconds = 0;
+        if (now < startTime){
+            remainSeconds = (int) ((startTime - now) / 1000);
+            flashSaleStatus = 0;
+        }
+        else if (now > endTime){
+            flashSaleStatus = 2;
+            remainSeconds = -1;
+        }
+        else{
+            flashSaleStatus = 1;
+        }
+
+        model.addAttribute("flashSaleStatus", flashSaleStatus);
+        model.addAttribute("remainSeconds", remainSeconds);
+
+        return "goods_detail";
+    }
 
 }

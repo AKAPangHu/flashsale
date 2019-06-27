@@ -18,5 +18,5 @@ public interface UserService {
 
     boolean login( LoginVo loginVo, HttpServletResponse resp);
 
-    User findByToken(String token);
+    User findByToken(HttpServletResponse reps, String token);
 }

@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 
 /**
+ * 用户类
  * @author: 胖虎
  * @date: 2019/6/17 8:31
  **/
