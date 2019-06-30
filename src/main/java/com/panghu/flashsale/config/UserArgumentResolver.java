@@ -54,7 +54,7 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
         }
         String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
 
-        return userService.findByToken(response, token);
+        return userService.getByToken(response, token);
     }
 
     private String getCookieValue(HttpServletRequest request, String cookieName) {

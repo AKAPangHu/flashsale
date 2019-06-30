@@ -1,5 +1,6 @@
 package com.panghu.flashsale.service;
 
+import com.panghu.flashsale.domain.FlashSaleGoods;
 import com.panghu.flashsale.vo.GoodsVo;
 
 import java.util.List;
@@ -10,5 +11,8 @@ import java.util.List;
  **/
 public interface GoodsService {
     List<GoodsVo> listGoodsVo();
+
     GoodsVo getGoodsVoByGoodsId(long goodsId);
+
+    void reduceStock(FlashSaleGoods flashSaleGoods);
 }

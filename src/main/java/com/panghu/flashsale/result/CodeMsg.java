@@ -36,6 +36,10 @@ public class CodeMsg {
 
     //秒杀模块 5005XX
 
+    public static CodeMsg FLASH_SALE_GOODS_STOCK_EMPTY = new CodeMsg(500500, "秒杀商品售罄");
+    public static CodeMsg REPEAT_RUSH= new CodeMsg(500500, "请勿重复秒杀");
+
+
     private CodeMsg( ) {
     }
 

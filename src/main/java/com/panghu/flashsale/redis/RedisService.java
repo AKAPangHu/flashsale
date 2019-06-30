@@ -104,6 +104,14 @@ public class RedisService {
             returnToPool(jedis);
         }
     }
+    public boolean del(KeyPrefix prefix, String key) {
+        try(Jedis jedis = jedisPool.getResource()) {
+            //将{类名：前缀名}和要查询的key 拼接成真正的key
+            String realKey = prefix.getPrefix() + key;
+            Long success = jedis.del(realKey);
+            return success > 0;
+        }
+    }
 
 
     private <T> String beanToString(T value) {

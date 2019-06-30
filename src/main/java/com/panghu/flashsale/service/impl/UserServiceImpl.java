@@ -35,12 +35,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findById(long id) {
-        return userDao.findById(id);
+    public User getById(long id) {
+        //取缓存
+        User user = redisService.get(UserKey.id, "" + id, User.class);
+        if (user != null){
+            return user;
+        }
+        //查数据库
+        user = userDao.findById(id);
+        if (user != null){
+            redisService.set(UserKey.id , "" + id, user);
+        }
+        return user;
+    }
+
+    public boolean updatePassword(String token, long id, String password){
+        User user = getById(id);
+        if (user == null){
+            throw new GlobalException(CodeMsg.CELLPHONE_NOT_EXIST);
+        }
+        password = MD5Utils.handlePassword(password, user.getSalt());
+        User toBeUpdate = new User();
+        toBeUpdate.setId(id);
+        toBeUpdate.setPassword(password);
+        userDao.updatePassword(toBeUpdate);
+        redisService.del(UserKey.id, "" + id);
+        user.setPassword(password);
+        redisService.set(UserKey.token, token, user);
+
+        return true;
     }
 
     @Override
-    public User findByToken(HttpServletResponse resp, String token) {
+    public User getByToken(HttpServletResponse resp, String token) {
         if (StringUtils.isEmpty(token)) {
             return null;
         }

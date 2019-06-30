@@ -1,7 +1,6 @@
 package com.panghu.flashsale;
 
 import com.panghu.flashsale.redis.RedisService;
-import com.panghu.flashsale.redis.UserKey;
 import com.panghu.flashsale.service.UserService;
 import com.panghu.flashsale.utils.MD5Utils;
 import org.junit.Test;
@@ -36,7 +35,7 @@ public class FlashsaleApplicationTests {
 
     @Test
     public void testUserService(){
-        System.out.println(userService.findById(13843012345L));
+        System.out.println(userService.getById(13843012345L));
     }
 
     @Test

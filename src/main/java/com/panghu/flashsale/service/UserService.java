@@ -14,9 +14,9 @@ public interface UserService {
 
     String COOKIE_NAME_TOKEN = "token";
 
-    User findById(long id);
+    User getById(long id);
 
     boolean login( LoginVo loginVo, HttpServletResponse resp);
 
-    User findByToken(HttpServletResponse reps, String token);
+    User getByToken(HttpServletResponse reps, String token);
 }

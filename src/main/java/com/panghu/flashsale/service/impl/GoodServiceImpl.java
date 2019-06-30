@@ -1,6 +1,7 @@
 package com.panghu.flashsale.service.impl;
 
 import com.panghu.flashsale.dao.GoodsDao;
+import com.panghu.flashsale.domain.FlashSaleGoods;
 import com.panghu.flashsale.service.GoodsService;
 import com.panghu.flashsale.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +32,10 @@ public class GoodServiceImpl implements GoodsService {
     @Override
     public GoodsVo getGoodsVoByGoodsId(long goodsId) {
         return goodsDao.getGoodsVoByGoodsId(goodsId);
+    }
+
+    @Override
+    public void reduceStock(FlashSaleGoods flashSaleGoods) {
+        goodsDao.reduceStock(flashSaleGoods);
     }
 }

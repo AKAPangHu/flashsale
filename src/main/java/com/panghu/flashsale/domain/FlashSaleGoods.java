@@ -16,7 +16,7 @@ import java.util.Date;
 @ToString
 public class FlashSaleGoods {
     private long id;
-    private String goodsId;
+    private long goodsId;
     private double promoPrice;
     private int stockCount;
     private Date startDate;
