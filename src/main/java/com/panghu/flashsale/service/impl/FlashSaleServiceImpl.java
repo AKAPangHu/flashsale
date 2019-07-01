@@ -1,7 +1,6 @@
 package com.panghu.flashsale.service.impl;
 
 import com.panghu.flashsale.domain.FlashSaleGoods;
-import com.panghu.flashsale.domain.FlashSaleOrder;
 import com.panghu.flashsale.domain.OrderInfo;
 import com.panghu.flashsale.domain.User;
 import com.panghu.flashsale.service.FlashSaleService;

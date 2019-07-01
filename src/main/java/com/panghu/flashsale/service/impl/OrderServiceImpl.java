@@ -4,9 +4,10 @@ import com.panghu.flashsale.dao.OrderDao;
 import com.panghu.flashsale.domain.FlashSaleOrder;
 import com.panghu.flashsale.domain.OrderInfo;
 import com.panghu.flashsale.domain.User;
+import com.panghu.flashsale.redis.OrderKey;
+import com.panghu.flashsale.redis.RedisService;
 import com.panghu.flashsale.service.OrderService;
 import com.panghu.flashsale.vo.GoodsVo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -20,8 +21,11 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderDao orderDao;
 
-    public OrderServiceImpl(OrderDao orderDao) {
+    private final RedisService redisService;
+
+    public OrderServiceImpl(OrderDao orderDao, RedisService redisService) {
         this.orderDao = orderDao;
+        this.redisService = redisService;
     }
 
     @Override
@@ -36,14 +40,16 @@ public class OrderServiceImpl implements OrderService {
         orderInfo.setGoodsName(goodsVo.getGoodsName());
         orderInfo.setGoodsCount(1);
         orderInfo.setGoodsPrice(goodsVo.getPromoPrice());
-        long orderId = orderDao.insertOrder(orderInfo);
-        orderInfo.setId(orderId);
+        //这条语句执行后会自动将返回的参数传入orderInfo中去
+        orderDao.insertOrder(orderInfo);
+
         return orderInfo;
     }
 
     @Override
     public FlashSaleOrder getFlashSaleOrderByUserIdAndGoodsId(long userId, long goodsId) {
-        return orderDao.getFlashSaleOrderByUserIdAndGoodsId(userId, goodsId);
+        return redisService.get(OrderKey.flashSaleOrderByUidAndGid,
+                "" + userId + "_" + goodsId, FlashSaleOrder.class);
     }
 
     @Override
@@ -53,5 +59,12 @@ public class OrderServiceImpl implements OrderService {
         flashSaleOrder.setUserId(userId);
         flashSaleOrder.setOrderId(ordersId);
         orderDao.insertFlashSaleOrder(flashSaleOrder);
+        redisService.set(OrderKey.flashSaleOrderByUidAndGid,
+                "" + userId + "_" + goodsId, flashSaleOrder);
+    }
+
+    @Override
+    public OrderInfo getOrderById(long orderId) {
+        return orderDao.getOrderById(orderId);
     }
 }

@@ -3,7 +3,9 @@ package com.panghu.flashsale.controller;
 import com.panghu.flashsale.domain.FlashSaleOrder;
 import com.panghu.flashsale.domain.OrderInfo;
 import com.panghu.flashsale.domain.User;
+import com.panghu.flashsale.exception.GlobalException;
 import com.panghu.flashsale.result.CodeMsg;
+import com.panghu.flashsale.result.Result;
 import com.panghu.flashsale.service.FlashSaleService;
 import com.panghu.flashsale.service.GoodsService;
 import com.panghu.flashsale.service.OrderService;
@@ -12,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @author: 胖虎
@@ -34,29 +38,24 @@ public class FlashSaleController {
         this.flashSaleService = flashSaleService;
     }
 
-    @RequestMapping("flashsale/rush")
-    public String rush(Model model, User user,@RequestParam("goodsId")long goodsId){
+    @RequestMapping(value = "/flashsale/rush", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<OrderInfo> rush(Model model, User user, @RequestParam("goodsId") long goodsId) {
         model.addAttribute("user", user);
-        if (user == null){
-            return "login";
+        if (user == null) {
+            throw new GlobalException(CodeMsg.SESSION_ERROR);
         }
-
         GoodsVo goodsVo = goodsService.getGoodsVoByGoodsId(goodsId);
         int stock = goodsVo.getStockCount();
-        if (stock <= 0){
-            model.addAttribute("errmsg", CodeMsg.FLASH_SALE_GOODS_STOCK_EMPTY.getMsg());
-            return "rush_fail";
+        if (stock <= 0) {
+            throw new GlobalException(CodeMsg.FLASH_SALE_GOODS_STOCK_EMPTY);
         }
 
         FlashSaleOrder order = orderService.getFlashSaleOrderByUserIdAndGoodsId(user.getId(), goodsId);
-        if (order != null){
-            model.addAttribute("errmsg", CodeMsg.REPEAT_RUSH.getMsg());
-            return "rush_fail";
+        if (order != null) {
+            throw new GlobalException(CodeMsg.REPEAT_RUSH);
         }
-
         OrderInfo finishedOrder = flashSaleService.rush(user, goodsVo);
-        model.addAttribute("orderInfo", finishedOrder);
-        model.addAttribute("goods", goodsVo);
-        return "order_detail";
+        return Result.success(finishedOrder);
     }
 }

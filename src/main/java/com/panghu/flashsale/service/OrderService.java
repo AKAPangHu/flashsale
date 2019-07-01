@@ -17,4 +17,6 @@ public interface OrderService {
     FlashSaleOrder getFlashSaleOrderByUserIdAndGoodsId(long userId, long goodsId);
 
     void createFlashSaleOrder(long userId, long goodsId, long ordersId);
+
+    OrderInfo getOrderById(long orderId);
 }

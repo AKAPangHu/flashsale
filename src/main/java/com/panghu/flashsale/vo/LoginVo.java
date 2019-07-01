@@ -16,9 +16,12 @@ import javax.validation.constraints.NotNull;
 @Getter
 @ToString
 public class LoginVo {
+
     @NotNull
     @IsMobile
     private String cellphone;
+
     @NotNull
     private String password;
+
 }

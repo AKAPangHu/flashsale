@@ -1,14 +1,19 @@
 package com.panghu.flashsale.controller;
 
 import com.panghu.flashsale.domain.User;
+import com.panghu.flashsale.exception.GlobalException;
 import com.panghu.flashsale.redis.GoodsKey;
 import com.panghu.flashsale.redis.RedisService;
+import com.panghu.flashsale.result.CodeMsg;
+import com.panghu.flashsale.result.Result;
 import com.panghu.flashsale.service.GoodsService;
+import com.panghu.flashsale.vo.GoodsDetailVo;
 import com.panghu.flashsale.vo.GoodsVo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.thymeleaf.context.IContext;
 import org.thymeleaf.context.WebContext;
@@ -45,7 +50,7 @@ public class GoodsController {
                        HttpServletRequest request,
                        HttpServletResponse response) {
         if (user == null) {
-            return "login";
+            throw new GlobalException(CodeMsg.SESSION_ERROR);
         }
         //取缓存
         String html = redisService.get(GoodsKey.goodsList, "", String.class);
@@ -66,23 +71,12 @@ public class GoodsController {
         return html;
     }
 
-    @RequestMapping(value = "/to_detail/{goodsId}", produces = "text/html")
+    @RequestMapping(value = "/detail/{goodsId}", method = RequestMethod.GET)
     @ResponseBody
-    public String detail(Model model, User user,
-                         HttpServletRequest request,
-                         HttpServletResponse response,
+    public Result<GoodsDetailVo> detail(User user,
                          @PathVariable("goodsId") long goodsId) {
 
-        //取缓存
-        //实际逻辑有问题！
-        String html = redisService.get(GoodsKey.goodsDetail, Long.toString(goodsId), String.class);
-        if (!StringUtils.isEmpty(html)) {
-            return html;
-        }
-
         GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
-        model.addAttribute("user", user);
-        model.addAttribute("goods", goods);
 
         long startTime = goods.getStartDate().getTime();
         long endTime = goods.getEndDate().getTime();
@@ -101,16 +95,12 @@ public class GoodsController {
             flashSaleStatus = 1;
         }
 
-        model.addAttribute("flashSaleStatus", flashSaleStatus);
-        model.addAttribute("remainSeconds", remainSeconds);
-
-        //手动渲染
-        WebContext context = new WebContext(request, response, request.getServletContext(), request.getLocale(), model.asMap());
-        html = thymeleafViewResolver.getTemplateEngine().process("goods_detail", context);
-        if (!StringUtils.isEmpty(html)) {
-            redisService.set(GoodsKey.goodsDetail, Long.toString(goodsId), html);
-        }
-        return html;
+        GoodsDetailVo goodsDetailVo = new GoodsDetailVo();
+        goodsDetailVo.setGoods(goods);
+        goodsDetailVo.setFlashSaleStatus(flashSaleStatus);
+        goodsDetailVo.setRemainSeconds(remainSeconds);
+        goodsDetailVo.setUser(user);
+        return Result.success(goodsDetailVo);
     }
 
 }
