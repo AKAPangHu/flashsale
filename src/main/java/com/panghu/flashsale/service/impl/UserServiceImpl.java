@@ -10,7 +10,6 @@ import com.panghu.flashsale.service.UserService;
 import com.panghu.flashsale.utils.MD5Utils;
 import com.panghu.flashsale.utils.UUIDUtils;
 import com.panghu.flashsale.vo.LoginVo;
-import com.sun.deploy.net.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;

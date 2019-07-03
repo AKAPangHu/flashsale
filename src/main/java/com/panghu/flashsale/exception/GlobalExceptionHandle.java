@@ -38,7 +38,7 @@ public class GlobalExceptionHandle{
             return Result.error(globalException.getCodeMsg());
         }
 
-
+        e.printStackTrace();
         return Result.error(CodeMsg.SERVER_ERROR);
     }
 
