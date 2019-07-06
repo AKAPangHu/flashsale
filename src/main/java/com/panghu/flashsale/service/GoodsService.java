@@ -14,5 +14,5 @@ public interface GoodsService {
 
     GoodsVo getGoodsVoByGoodsId(long goodsId);
 
-    void reduceStock(FlashSaleGoods flashSaleGoods);
+    boolean reduceStock(FlashSaleGoods flashSaleGoods);
 }

@@ -14,6 +14,7 @@ import java.lang.annotation.*;
 @Documented
 @Constraint(validatedBy = {IsMobileValidator.class})
 public @interface IsMobile {
+
     String message() default "手机号格式错误";
 
     boolean required() default true;

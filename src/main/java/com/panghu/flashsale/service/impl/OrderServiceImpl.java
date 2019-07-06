@@ -67,4 +67,10 @@ public class OrderServiceImpl implements OrderService {
     public OrderInfo getOrderById(long orderId) {
         return orderDao.getOrderById(orderId);
     }
+
+    @Override
+    public void reset() {
+        orderDao.deleteFlashSaleOrder();
+        orderDao.deleteOrderInfos();
+    }
 }

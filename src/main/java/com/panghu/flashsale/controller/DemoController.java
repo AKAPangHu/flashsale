@@ -1,7 +1,7 @@
 package com.panghu.flashsale.controller;
 
+import com.panghu.flashsale.rabbitmq.MqSender;
 import com.panghu.flashsale.redis.RedisService;
-import com.panghu.flashsale.redis.UserKey;
 import com.panghu.flashsale.result.Result;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,14 +16,23 @@ public class DemoController {
 
     private final RedisService redisService;
 
-    public DemoController(RedisService redisService) {
+    private final MqSender mqSender;
+
+    public DemoController(RedisService redisService, MqSender mqSender) {
         this.redisService = redisService;
+        this.mqSender = mqSender;
     }
 
 
     @ResponseBody
     @RequestMapping("/redis/get")
     public Result<String> redisGet(){
+        return Result.success("1");
+    }
+
+    @ResponseBody
+    @RequestMapping("/mq")
+    public Result<String> mqTest(){
         return Result.success("1");
     }
 

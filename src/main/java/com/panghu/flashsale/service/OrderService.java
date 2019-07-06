@@ -19,4 +19,7 @@ public interface OrderService {
     void createFlashSaleOrder(long userId, long goodsId, long ordersId);
 
     OrderInfo getOrderById(long orderId);
+
+    void reset();
+
 }

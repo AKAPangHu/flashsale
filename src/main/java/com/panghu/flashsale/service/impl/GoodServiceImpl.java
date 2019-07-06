@@ -35,7 +35,7 @@ public class GoodServiceImpl implements GoodsService {
     }
 
     @Override
-    public void reduceStock(FlashSaleGoods flashSaleGoods) {
-        goodsDao.reduceStock(flashSaleGoods);
+    public boolean reduceStock(FlashSaleGoods flashSaleGoods) {
+        return (goodsDao.reduceStock(flashSaleGoods) > 0);
     }
 }
