@@ -15,4 +15,6 @@ public class FlashSaleKey extends BasePrefix {
     }
 
     public static FlashSaleKey isOver = new FlashSaleKey("io");
+
+    public static FlashSaleKey flashSalePath = new FlashSaleKey(60,"flsp");
 }

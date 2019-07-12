@@ -20,7 +20,7 @@ public class JedisPoolFactory {
     }
 
     @Bean("jedisPool")
-    public JedisPool jedisPoolFactory(){
+    public JedisPool jedisPoolFactory() {
         redis.clients.jedis.JedisPoolConfig poolConfig = new redis.clients.jedis.JedisPoolConfig();
         poolConfig.setMaxIdle(redisConfig.getPoolMaxIdle());
         poolConfig.setMaxTotal(redisConfig.getPoolMaxTotal());

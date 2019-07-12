@@ -5,6 +5,7 @@ import com.panghu.flashsale.domain.User;
 import com.panghu.flashsale.exception.GlobalException;
 import com.panghu.flashsale.rabbitmq.FlashSaleMessage;
 import com.panghu.flashsale.rabbitmq.MqSender;
+import com.panghu.flashsale.redis.FlashSaleKey;
 import com.panghu.flashsale.redis.GoodsKey;
 import com.panghu.flashsale.redis.RedisService;
 import com.panghu.flashsale.result.CodeMsg;
@@ -12,14 +13,14 @@ import com.panghu.flashsale.result.Result;
 import com.panghu.flashsale.service.FlashSaleService;
 import com.panghu.flashsale.service.GoodsService;
 import com.panghu.flashsale.service.OrderService;
+import com.panghu.flashsale.utils.MD5Utils;
+import com.panghu.flashsale.utils.UUIDUtils;
 import com.panghu.flashsale.vo.GoodsVo;
+import com.sun.tools.javac.jvm.Code;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,7 @@ public class FlashSaleController implements InitializingBean {
 
     private HashMap<Long, Boolean> localOverMap = new HashMap<>();
 
+
     @Override
     public void afterPropertiesSet() {
         List<GoodsVo> goodsVos = goodsService.listGoodsVo();
@@ -62,13 +64,21 @@ public class FlashSaleController implements InitializingBean {
     }
 
 
-    @RequestMapping(value = "/rush", method = RequestMethod.POST)
+    @RequestMapping(value = "/rush/{path}", method = RequestMethod.POST)
     @ResponseBody
-    public Result<Integer> rush(Model model, User user, @RequestParam("goodsId") long goodsId) {
-        model.addAttribute("user", user);
+    public Result<Integer> rush(User user,
+                                @RequestParam("goodsId") long goodsId,
+                                @PathVariable String path) {
         if (user == null) {
-            throw new GlobalException(CodeMsg.SESSION_ERROR);
+            return Result.error(CodeMsg.SESSION_ERROR);
         }
+
+        boolean valid = flashSaleService.checkPath(path, user, goodsId);
+
+        if (!valid){
+            return Result.error(CodeMsg.REQUEST_ILLEGAL);
+        }
+        //查看是否秒杀已结束
         Boolean over = localOverMap.get(goodsId);
         if (over == null){
             return Result.error(CodeMsg.FLASH_SALE_IS_OVER);
@@ -104,6 +114,19 @@ public class FlashSaleController implements InitializingBean {
         long result = flashSaleService.getResult(user.getId(), goodsId);
         return Result.success(result);
     }
+
+    @RequestMapping(value = "/path")
+    @ResponseBody
+    public Result<String> getPath(User user, @RequestParam String goodsId){
+        if (user == null){
+            return Result.error(CodeMsg.SESSION_ERROR);
+        }
+        //生成path，存入redis
+        String path = MD5Utils.md5(UUIDUtils.uuid() + "panghu");
+        redisService.set(FlashSaleKey.flashSalePath, "" + user.getId() + "_" + goodsId, path);
+        return Result.success(path);
+    }
+
 
     @RequestMapping(value = "/reset")
     public void reset(){

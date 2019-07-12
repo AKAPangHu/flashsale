@@ -13,4 +13,6 @@ public interface FlashSaleService {
     OrderInfo rush(User user, GoodsVo goodsVo);
 
     long getResult(long userId, long goodsId);
+
+    boolean checkPath(String path, User user, long goodsId);
 }

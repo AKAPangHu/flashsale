@@ -38,7 +38,7 @@ public class FlashSaleServiceImpl implements FlashSaleService {
         FlashSaleGoods flashSaleGoods = new FlashSaleGoods();
         flashSaleGoods.setGoodsId(goodsVo.getId());
         boolean success = goodsService.reduceStock(flashSaleGoods);
-        if (!success){
+        if (!success) {
             setOver(goodsVo.getId());
             return null;
         }
@@ -48,28 +48,35 @@ public class FlashSaleServiceImpl implements FlashSaleService {
     }
 
     @Override
-    public long getResult(long userId, long goodsId){
+    public long getResult(long userId, long goodsId) {
         FlashSaleOrder order = orderService.getFlashSaleOrderByUserIdAndGoodsId(userId, goodsId);
-        if (order != null){
+        if (order != null) {
             return order.getOrderId();
-        }
-        else{
+        } else {
             boolean isOver = getOver(goodsId);
-            if (isOver){
+            if (isOver) {
                 return -1;
-            }
-            else {
+            } else {
                 return 0;
             }
         }
     }
 
-    private void setOver(long goodsId){
+    @Override
+    public boolean checkPath(String path, User user, long goodsId) {
+        String pathInDb =
+                redisService.get(FlashSaleKey.flashSalePath, "" + user.getId() + "_" + goodsId, String.class);
+        return path.equals(pathInDb);
+    }
+
+
+    private void setOver(long goodsId) {
         redisService.set(FlashSaleKey.isOver, "" + goodsId, true);
     }
 
-    private boolean getOver(long goodsId){
+    private boolean getOver(long goodsId) {
         return redisService.exists(FlashSaleKey.isOver, "" + goodsId);
     }
+
 
 }
