@@ -2,7 +2,6 @@ package com.panghu.flashsale.controller;
 
 import com.panghu.flashsale.domain.FlashSaleOrder;
 import com.panghu.flashsale.domain.User;
-import com.panghu.flashsale.exception.GlobalException;
 import com.panghu.flashsale.rabbitmq.FlashSaleMessage;
 import com.panghu.flashsale.rabbitmq.MqSender;
 import com.panghu.flashsale.redis.FlashSaleKey;
@@ -13,15 +12,20 @@ import com.panghu.flashsale.result.Result;
 import com.panghu.flashsale.service.FlashSaleService;
 import com.panghu.flashsale.service.GoodsService;
 import com.panghu.flashsale.service.OrderService;
+import com.panghu.flashsale.utils.CAPTCHAUtils;
 import com.panghu.flashsale.utils.MD5Utils;
 import com.panghu.flashsale.utils.UUIDUtils;
 import com.panghu.flashsale.vo.GoodsVo;
-import com.sun.tools.javac.jvm.Code;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import javax.script.ScriptException;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,12 +47,15 @@ public class FlashSaleController implements InitializingBean {
 
     private final MqSender mqSender;
 
-    public FlashSaleController(GoodsService goodsService, OrderService orderService, RedisService redisService, FlashSaleService flashSaleService, MqSender mqSender) {
+    private final CAPTCHAUtils captchaUtils;
+
+    public FlashSaleController(GoodsService goodsService, OrderService orderService, RedisService redisService, FlashSaleService flashSaleService, MqSender mqSender, CAPTCHAUtils captchaUtils) {
         this.goodsService = goodsService;
         this.orderService = orderService;
         this.redisService = redisService;
         this.flashSaleService = flashSaleService;
         this.mqSender = mqSender;
+        this.captchaUtils = captchaUtils;
     }
 
     private HashMap<Long, Boolean> localOverMap = new HashMap<>();
@@ -68,15 +75,22 @@ public class FlashSaleController implements InitializingBean {
     @ResponseBody
     public Result<Integer> rush(User user,
                                 @RequestParam("goodsId") long goodsId,
+                                @RequestParam("captcha") int captcha,
                                 @PathVariable String path) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
 
+        //检验路径
         boolean valid = flashSaleService.checkPath(path, user, goodsId);
 
         if (!valid){
             return Result.error(CodeMsg.REQUEST_ILLEGAL);
+        }
+        //检查验证码
+        boolean right = flashSaleService.checkCaptcha(captcha, user.getId(), goodsId);
+        if (!right){
+            return Result.error(CodeMsg.CAPTCHA_ERROR);
         }
         //查看是否秒杀已结束
         Boolean over = localOverMap.get(goodsId);
@@ -117,7 +131,7 @@ public class FlashSaleController implements InitializingBean {
 
     @RequestMapping(value = "/path")
     @ResponseBody
-    public Result<String> getPath(User user, @RequestParam String goodsId){
+    public Result<String> getPath(User user, @RequestParam long goodsId){
         if (user == null){
             return Result.error(CodeMsg.SESSION_ERROR);
         }
@@ -125,6 +139,23 @@ public class FlashSaleController implements InitializingBean {
         String path = MD5Utils.md5(UUIDUtils.uuid() + "panghu");
         redisService.set(FlashSaleKey.flashSalePath, "" + user.getId() + "_" + goodsId, path);
         return Result.success(path);
+    }
+
+    @RequestMapping(value = "/captcha", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> getCaptcha(User user, @RequestParam long goodsId,
+                                     HttpServletResponse response) throws ScriptException {
+        //生成验证码并存储，返回一个图像
+        BufferedImage bufferedImage = captchaUtils.generateCaptcha(user.getId(), goodsId);
+        //返回验证码
+        try(OutputStream out = response.getOutputStream()) {
+            ImageIO.write(bufferedImage, "JPEG", out);
+            out.flush();
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Result.error(CodeMsg.SERVER_ERROR);
+        }
     }
 
 

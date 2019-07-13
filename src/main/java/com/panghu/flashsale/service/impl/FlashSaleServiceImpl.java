@@ -69,6 +69,18 @@ public class FlashSaleServiceImpl implements FlashSaleService {
         return path.equals(pathInDb);
     }
 
+    @Override
+    public boolean checkCaptcha(int captcha, long userId, long goodsId) {
+        if (goodsId <= 0 || userId <= 0){
+            return false;
+        }
+        Integer captchaInDb = redisService.get(FlashSaleKey.flashSaleCaptcha, userId + "_" + goodsId, Integer.class);
+        if (captchaInDb == null){
+            return false;
+        }
+        return captcha == captchaInDb;
+    }
+
 
     private void setOver(long goodsId) {
         redisService.set(FlashSaleKey.isOver, "" + goodsId, true);

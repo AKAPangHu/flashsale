@@ -15,4 +15,6 @@ public interface FlashSaleService {
     long getResult(long userId, long goodsId);
 
     boolean checkPath(String path, User user, long goodsId);
+
+    boolean checkCaptcha(int captcha, long userId, long goodsId);
 }

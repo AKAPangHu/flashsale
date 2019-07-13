@@ -40,16 +40,18 @@
             <td id="startTime"></td>
             <td>
                 <input type="hidden" id="remainSeconds"/>
-                <span id="miaoshaTip"></span>
+                <span id="status"></span>
             </td>
             <td>
-                <!--
-                    <form id="miaoshaForm" method="post" action="/miaosha/do_miaosha">
-                        <button class="btn btn-primary btn-block" type="submit" id="buyButton">立即秒杀</button>
-                        <input type="hidden" name="goodsId"  id="goodsId" />
-                    </form>-->
-                <button class="btn btn-primary btn-block" type="button" id="buyButton" onclick="getFlashSalePath()">立即秒杀
-                </button>
+                <div class="row">
+                    <div class="form-inline">
+                        <img id="captchaImg" width="80" height="32" style="display:none"
+                             onclick="refreshCaptcha()"/>
+                        <input id="captcha" class="form-control" style="display:none"/>
+                        <button class="btn btn-primary" type="button" id="buyButton" onclick="getFlashSalePath()">立即秒杀
+                        </button>
+                    </div>
+                </div>
                 <input type="hidden" name="goodsId" id="goodsId"/>
             </td>
         </tr>
@@ -136,6 +138,7 @@
             type: "POST",
             data: {
                 goodsId: $("#goodsId").val(),
+                captcha: $("#captcha").val()
             },
             success: function (data) {
                 if (data.code == 0) {
@@ -192,12 +195,14 @@
         });
     }
 
+
+
     function countDown() {
         var remainSeconds = $("#remainSeconds").val();
         var timeout;
         if (remainSeconds > 0) {//秒杀还没开始，倒计时
             $("#buyButton").attr("disabled", true);
-            $("#miaoshaTip").html("秒杀倒计时：" + remainSeconds + "秒");
+            $("#status").html("秒杀倒计时：" + remainSeconds + "秒");
             timeout = setTimeout(function () {
                 $("#countDown").text(remainSeconds - 1);
                 $("#remainSeconds").val(remainSeconds - 1);
@@ -208,11 +213,17 @@
             if (timeout) {
                 clearTimeout(timeout);
             }
-            $("#miaoshaTip").html("秒杀进行中");
+            $("#status").html("秒杀进行中");
+            $("#captchaImg").attr("src", "/flashsale/captcha?goodsId=" + $("#goodsId").val());
+            $("#captchaImg").show();
+            $("#captcha").show();
         } else {//秒杀已经结束
             $("#buyButton").attr("disabled", true);
-            $("#miaoshaTip").html("秒杀已经结束");
+            $("#status").html("秒杀已经结束");
         }
+    }
+    function refreshCaptcha(){
+        $("#captchaImg").attr("src", "/flashsale/captcha?goodsId=" + $("#goodsId").val() + "&timestamp=" + new Date().getTime());
     }
 
 </script>

@@ -6,15 +6,17 @@ package com.panghu.flashsale.redis;
  **/
 public class FlashSaleKey extends BasePrefix {
 
-    public FlashSaleKey(String prefix) {
+    private FlashSaleKey(String prefix) {
         super(prefix);
     }
 
-    public FlashSaleKey(int expireSeconds, String prefix) {
+    private FlashSaleKey(int expireSeconds, String prefix) {
         super(expireSeconds, prefix);
     }
 
     public static FlashSaleKey isOver = new FlashSaleKey("io");
 
     public static FlashSaleKey flashSalePath = new FlashSaleKey(60,"flsp");
+
+    public static FlashSaleKey flashSaleCaptcha = new FlashSaleKey(60,"flsc");
 }
