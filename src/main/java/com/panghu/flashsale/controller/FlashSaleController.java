@@ -1,5 +1,6 @@
 package com.panghu.flashsale.controller;
 
+import com.panghu.flashsale.access.AccessLimit;
 import com.panghu.flashsale.domain.FlashSaleOrder;
 import com.panghu.flashsale.domain.User;
 import com.panghu.flashsale.rabbitmq.FlashSaleMessage;
@@ -71,16 +72,13 @@ public class FlashSaleController implements InitializingBean {
     }
 
 
+    @AccessLimit(seconds = 60)
     @RequestMapping(value = "/rush/{path}", method = RequestMethod.POST)
     @ResponseBody
     public Result<Integer> rush(User user,
                                 @RequestParam("goodsId") long goodsId,
-                                @RequestParam("captcha") int captcha,
+                                @RequestParam("captcha") String captcha,
                                 @PathVariable String path) {
-        if (user == null) {
-            return Result.error(CodeMsg.SESSION_ERROR);
-        }
-
         //检验路径
         boolean valid = flashSaleService.checkPath(path, user, goodsId);
 
@@ -135,8 +133,12 @@ public class FlashSaleController implements InitializingBean {
         if (user == null){
             return Result.error(CodeMsg.SESSION_ERROR);
         }
+        String path = redisService.get(FlashSaleKey.flashSalePath, "" + user.getId() + "_" + goodsId, String.class);
+        if (path != null){
+            return Result.success(path);
+        }
         //生成path，存入redis
-        String path = MD5Utils.md5(UUIDUtils.uuid() + "panghu");
+        path = MD5Utils.md5(UUIDUtils.uuid() + "panghu");
         redisService.set(FlashSaleKey.flashSalePath, "" + user.getId() + "_" + goodsId, path);
         return Result.success(path);
     }

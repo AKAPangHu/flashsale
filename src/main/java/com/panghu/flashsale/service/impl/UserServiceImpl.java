@@ -72,7 +72,9 @@ public class UserServiceImpl implements UserService {
         }
         User user = redisService.get(UserKey.token, token, User.class);
         //更新tokenCookie
-        addTokenCookie(resp, token, user);
+        if (user != null){
+            addTokenCookie(resp, token, user);
+        }
         return user;
     }
 

@@ -1,5 +1,6 @@
 package com.panghu.flashsale.config;
 
+import com.panghu.flashsale.access.UserHolder;
 import com.panghu.flashsale.domain.User;
 import com.panghu.flashsale.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,39 +44,8 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
                                   NativeWebRequest nativeWebRequest,
                                   WebDataBinderFactory webDataBinderFactory) throws Exception {
 
-        HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
-        HttpServletResponse response = nativeWebRequest.getNativeResponse(HttpServletResponse.class);
-
-        String paramToken = null;
-        if (request != null) {
-            paramToken = request.getParameter(UserService.COOKIE_NAME_TOKEN);
-        }
-        String cookieToken = null;
-        if (request != null) {
-            cookieToken = getCookieValue(request, UserService.COOKIE_NAME_TOKEN);
-        }
-
-        if (StringUtils.isEmpty(paramToken) && StringUtils.isEmpty(cookieToken)){
-            return null;
-        }
-        String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-
-        return userService.getByToken(response, token);
+        return UserHolder.get();
     }
 
-    private String getCookieValue(HttpServletRequest request, String cookieName) {
-        if(request == null){
-            return null;
-        }
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null || cookies.length == 0){
-            return null;
-        }
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(cookieName) ){
-                return cookie.getValue();
-            }
-        }
-        return null;
-    }
+
 }

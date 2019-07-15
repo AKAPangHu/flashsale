@@ -10,6 +10,7 @@ import lombok.ToString;
  **/
 @Getter
 public class GlobalException extends RuntimeException{
+
     private static final long serialVersionUID = 1L;
     private CodeMsg codeMsg;
 
@@ -17,7 +18,5 @@ public class GlobalException extends RuntimeException{
         super(codeMsg.toString());
         this.codeMsg = codeMsg;
     }
-
-
 
 }
